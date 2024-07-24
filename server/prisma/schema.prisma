@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   Int       @id @default(autoincrement())
+  name                 String    @db.VarChar(191)
+  email                String    @unique
+  password             String
+  password_reset_token String?
+  token_send_at        DateTime?
+  email_verified_at    DateTime?
+  email_verify_token   String?
+  created_at           DateTime  @default(now())
+  Clash                Clash[]
+
+  @@index([name])
+}
+
+model Clash {
+  id            Int             @id @default(autoincrement())
+  user          User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id       Int
+  title         String
+  description   String?
+  image         String
+  created_at    DateTime        @default(now())
+  expire_at     DateTime
+  ClashItem     ClashItem[]
+  ClashComments ClashComments[]
+
+  @@index([expire_at, title])
+}
+
+model ClashItem {
+  id         Int      @id @default(autoincrement())
+  clash      Clash    @relation(fields: [clash_id], references: [id], onDelete: Cascade)
+  clash_id   Int
+  image      String
+  count      Int      @default(0)
+  created_at DateTime @default(now())
+}
+
+model ClashComments {
+  id         Int      @id @default(autoincrement())
+  clash      Clash    @relation(fields: [clash_id], references: [id], onDelete: Cascade)
+  clash_id   Int
+  comment    String
+  created_at DateTime @default(now())
+}
